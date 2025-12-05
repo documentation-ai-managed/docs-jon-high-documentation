@@ -1,0 +1,162 @@
+openapi: '3.0.0'
+info:
+  version: 1.0.0
+  title: Simply Stoicism API
+  license:
+    name: MIT
+servers:
+  - url: http://stoicism.simplystoicism.io/v1
+paths:
+  /lessons:
+    get:
+      summary: List all lessons
+      operationId: listLessons
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: An paged array of lessons
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lessons'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a lesson
+      operationId: createLessons
+      responses:
+        201:
+          description: Null response
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /lessons/{lessonId}:
+    get:
+      summary: Info for a specific lesson
+      operationId: showLessonById
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          description: The id of the lesson to retrieve
+          schema:
+            type: string
+      responses:
+        200:
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lessons'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /practices:
+    get:
+      summary: Retrieve a list of daily Stoic practices available on the platform
+      operationId: listPractices
+      parameters:
+        - name: category
+          in: query
+          description: Filter practices by category such as meditation or journaling
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: A paginated collection of Stoic practices with details including titles, descriptions, and difficulty levels
+          headers:
+            x-next:
+              description: Provides a URL link to access the subsequent set of practice results for pagination
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Practices'
+        default:
+          description: Indicates an unexpected error occurred during the request processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a new daily practice entry
+      operationId: createPractice
+      responses:
+        201:
+          description: Successfully created a new practice entry without returning data
+        default:
+          description: Indicates an unexpected error occurred during the creation process
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Lesson:
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        tag:
+          type: string
+    Lessons:
+      type: array
+      items:
+        $ref: '#/components/schemas/Lesson'
+    Practice:
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        difficulty:
+          type: string
+    Practices:
+      type: array
+      items:
+        $ref: '#/components/schemas/Practice'
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
